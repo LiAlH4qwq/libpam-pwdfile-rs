@@ -34,7 +34,10 @@ impl PamServiceModule for PamPwdfile {
         let username: String = try_or_ret!(get_string(pamh.get_cached_user()));
         let password: String = try_or_ret!(get_string(pamh.get_authtok(None)));
         sha512.update(password.as_bytes());
-        let hash = format!("{:x}", sha512.finalize());
+        let hash = sha512.finalize()
+            .iter()
+            .map(|b| format!("{:02x}", b))
+            .collect::<String>();
         let path_to_file = if let Some(index) = args.iter().position(|x| x == "pwdfile") {
             if let Some(pwdfile) = args.get(index + 1) {
                 pwdfile
