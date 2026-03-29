@@ -22,8 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     pam
   ];
 
-  # doCheck = false;
-
   dontCargoInstall = true;
 
   installPhase = ''
