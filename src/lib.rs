@@ -1,9 +1,8 @@
 #[macro_use]
 extern crate pamsm;
 use pamsm::{Pam, PamError, PamFlags, PamLibExt, PamServiceModule};
-use password_hash::{PasswordHash, PasswordVerifier};
+use yescrypt::{PasswordHash, PasswordVerifier, Yescrypt};
 use std::{ffi::CStr, io::BufRead};
-use yescrypt::Yescrypt;
 
 macro_rules! try_or_ret {
     ($expr:expr, $err:expr) => {
@@ -66,7 +65,7 @@ impl PamServiceModule for PamPwdfile {
                 Ok(h) => h,
                 Err(_) => return PamError::AUTH_ERR,
             };
-            if Yescrypt::verify_password(password.as_bytes(), &parsed).is_ok() {
+            if Yescrypt::default().verify_password(password.as_bytes(), &parsed).is_ok() {
                 return PamError::SUCCESS;
             }
         }
