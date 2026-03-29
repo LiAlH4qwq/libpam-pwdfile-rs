@@ -66,7 +66,7 @@ impl PamServiceModule for PamPwdfile {
                 Ok(h) => h,
                 Err(_) => return PamError::AUTH_ERR,
             };
-            if Yescrypt.verify_password(password.as_bytes(), &parsed).is_ok() {
+            if Yescrypt::verify_password(password.as_bytes(), &parsed).is_ok() {
                 return PamError::SUCCESS;
             }
         }
