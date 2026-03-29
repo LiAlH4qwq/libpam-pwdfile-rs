@@ -9,7 +9,7 @@ authors = [
 
 [dependencies]
 pamsm = {version = "*" ,features = ["libpam"] }
-sha2 = "0.10.6"
+sha2 = "0.11.0"
 
 [lib]
 name = "pam_pwdfile_rs"
