@@ -42,7 +42,7 @@ in
             );
             default = { };
             example = {
-              lialh4 = "9347259d6b1d86cc3a1eb2dd7b5d7a529d2e26524c16307e5f5bd9ca5b7513140f6f12f1c8066ab025d40579d9911e6c5bdbd4a17ba4bd5f6abfffb2947e2141";
+              lialh4.secret = "9347259d6b1d86cc3a1eb2dd7b5d7a529d2e26524c16307e5f5bd9ca5b7513140f6f12f1c8066ab025d40579d9911e6c5bdbd4a17ba4bd5f6abfffb2947e2141";
             };
             description = "Users and their hashed passwords used for auth.";
           };
