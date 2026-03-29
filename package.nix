@@ -8,7 +8,7 @@
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "libpam-pwdfile-rs";
-  version = "0.3.0";
+  version = "0.3.1";
 
   src = lib.cleanSource ./.;
 

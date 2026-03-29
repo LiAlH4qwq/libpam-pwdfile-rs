@@ -1,6 +1,6 @@
 # Maintainer: LiAlH4qwq <lialh4qwq@outlook.com>
 pkgname=libpam-pwdfile-rs
-pkgver=0.3.0
+pkgver=0.3.1
 pkgrel=1
 pkgdesc="PAM module for password file authentication with yescrypt"
 url="https://github.com/lialh4qwq/libpam-pwdfile-rs"

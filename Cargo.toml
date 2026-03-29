@@ -1,6 +1,6 @@
 [package]
 name = "pam_pwdfile_rs"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2024"
 authors = [
   "Supernovatux <thulashitharan.d@gmail.com>",

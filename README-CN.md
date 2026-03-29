@@ -4,7 +4,7 @@
 [![NixOS](https://img.shields.io/badge/NixOS-Flake_Ready-5277C3?style=flat-square&logo=nixos)](https://nixos.org/)
 [![Arch Linux](https://img.shields.io/badge/Arch_Linux-PKGBUILD-1793D1?style=flat-square&logo=archlinux)](https://archlinux.org/)
 [![MIT License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
-[![Version](https://img.shields.io/badge/v0.3.0-latest-blue?style=flat-square)](https://github.com/lialh4qwq/libpam-pwdfile-rs/releases/tag/v0.3.0)
+[![Version](https://img.shields.io/badge/v0.3.1-latest-blue?style=flat-square)](https://github.com/lialh4qwq/libpam-pwdfile-rs/releases/tag/v0.3.1)
 
 **[English](README.md)**
 
@@ -53,7 +53,7 @@ mkpasswd -m yescrypt
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     libpam-pwdfile-rs = {
-      url = "github:lialh4qwq/libpam-pwdfile-rs/v0.3.0";
+      url = "github:lialh4qwq/libpam-pwdfile-rs/v0.3.1";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -96,7 +96,7 @@ libpam-pwdfile-rs= {
 
 ```bash
 # 下载并从源码构建
-curl -LO https://github.com/lialh4qwq/libpam-pwdfile-rs/releases/download/v0.3.0/PKGBUILD
+curl -LO https://github.com/lialh4qwq/libpam-pwdfile-rs/releases/download/v0.3.1/PKGBUILD
 makepkg -si
 ```
 
