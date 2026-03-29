@@ -1,8 +1,11 @@
 [package]
 name = "pam_pwdfile_rs"
-version = "0.2.0"
-authors = ["Supernovatux <thulashitharan.d@gmail.com>"]
+version = "0.2.1"
 edition = "2024"
+authors = [
+  "Supernovatux <thulashitharan.d@gmail.com>",
+  "LiAlH4qwq <lialh4qwq@outlook.com>"
+]
 
 [dependencies]
 pamsm = {version = "*" ,features = ["libpam"] }
