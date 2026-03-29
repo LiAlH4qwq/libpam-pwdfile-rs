@@ -2,6 +2,7 @@
 name = "pam_pwdfile_rs"
 version = "0.2.0"
 authors = ["Supernovatux <thulashitharan.d@gmail.com>"]
+edition = "2024"
 
 [dependencies]
 pamsm = {version = "*" ,features = ["libpam"] }
