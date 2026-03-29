@@ -34,15 +34,15 @@ in
                   secret = lib.mkOption {
                     type = lib.types.str;
                     default = "";
-                    example = "7782b56db225e3136eea6379a63b610237fca412cf50b93918e3fc67fa2bede1cc40128e9db58ac68eb4d73103dbfcb8f4b556eed9081824a98b9b11f7498b69";
-                    description = "Password hashed by `sha512sum`";
+                    example = "$y$j9T$F5Jx5fExrKuPp53xLKQ..1$X3DX6M94c7o.9agCG9G317fhZg9SqC.5i5rd.RhvU7D";
+                    description = "Password hashed with yescrypt (use: mkpasswd -m yescrypt)";
                   };
                 };
               }
             );
             default = { };
             example = {
-              lialh4.secret = "9347259d6b1d86cc3a1eb2dd7b5d7a529d2e26524c16307e5f5bd9ca5b7513140f6f12f1c8066ab025d40579d9911e6c5bdbd4a17ba4bd5f6abfffb2947e2141";
+              lialh4.secret = "$y$j9T$F5Jx5fExrKuPp53xLKQ..1$X3DX6M94c7o.9agCG9G317fhZg9SqC.5i5rd.RhvU7D";
             };
             description = "Users and their hashed passwords used for auth.";
           };
@@ -88,7 +88,7 @@ in
             install -Dm600 /dev/null ${val.pwdfile}
             ${lib.concatStringsSep "\n" (
               lib.mapAttrsToList (n: v: ''
-                echo "${n}:${v.secret}" >> ${val.pwdfile}
+                printf '%s\n' '${n}:${v.secret}' >> ${val.pwdfile}
               '') val.users
             )}
           '';

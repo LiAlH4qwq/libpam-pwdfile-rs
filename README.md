@@ -1,144 +1,158 @@
 # libpam-pwdfile-rs
 
-Rust port of [libpam-pwdfile](https://git.tiwe.de/libpam-pwdfile.git),
-a PAM module that auth against pwdfile.
+[![Rust](https://img.shields.io/badge/Rust-1.85+-f74c00?style=flat-square&logo=rust)](https://www.rust-lang.org/)
+[![NixOS](https://img.shields.io/badge/NixOS-Flake_Ready-5277C3?style=flat-square&logo=nixos)](https://nixos.org/)
+[![Arch Linux](https://img.shields.io/badge/Arch_Linux-PKGBUILD-1793D1?style=flat-square&logo=archlinux)](https://archlinux.org/)
+[![MIT License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
+[![Version](https://img.shields.io/badge/v0.3.0-latest-blue?style=flat-square)](https://github.com/lialh4qwq/libpam-pwdfile-rs/releases/tag/v0.3.0)
 
-This is useful if you want to use a different password somewhere, eg. gdm, polkit,
-which behaves like PIN of Windows.
+**[中文](README-CN.md)**
 
-It can also be used to set multiple passwords for users.
+---
 
-Passwords should be hashed by sha512sum.
+> 🔐 **A modern PAM module** for authenticating against password files — with **yescrypt** protection.
 
-Forked from: [Original Repo](https://github.com/Supernovatux/libpam-pwdfile-rs)
+Ever wanted a separate PIN for `sudo` or `polkit`? Or different passwords for different services? This PAM module makes it simple.
 
-## NixOS Configuration
+## ✨ Features
 
-Prepare hashed passwords with.
+Forked from [Supernovatux/libpam-pwdfile-rs](https://github.com/Supernovatux/libpam-pwdfile-rs), with yescrypt support and NixOS integration.
 
-```shell
-$ echo -n "your_password" | sha512sum
+- 🛡️ **yescrypt hashing** — Memory-hard, GPU-resistant password protection
+- 🐧 **NixOS native** — Flake + declarative module included
+- 📦 **Multi-distro** — PKGBUILD for Arch, generic install for others
+- 🔧 **Simple config** — Just `username:hash` in a file
+
+## 🛡️ Why yescrypt?
+
+**yescrypt** is a modern password hashing algorithm:
+- 🧠 **Memory-hard**: Each hash attempt needs significant RAM, limiting GPU parallelism
+- ⏱️ **Tunable cost**: Adjustable time/memory parameters for your security needs
+- 🐧 **Battle-tested**: Default for `/etc/shadow` on Debian, Ubuntu, Fedora, Arch...
+- 🏆 **PHC-recognized**: Based on scrypt, a Password Hashing Competition finalist
+
+## 🚀 Quick Start
+
+### Generate a Password Hash
+
+```bash
+mkpasswd -m yescrypt
+# Enter your password, get something like:
+# $y$j9T$F5Jx5fExrKuPp53xLKQ..1$X3DX6M94c7o.9agCG9G317fhZg9SqC.5i5rd.RhvU7D
 ```
 
-Add it to your `flake.nix` like this.
+### Installation
+
+<details>
+<summary><strong>🐧 NixOS (Recommended)</strong></summary>
+
+Add to your `flake.nix`:
 
 ```nix
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     libpam-pwdfile-rs = {
-      url = "github:lialh4qwq/libpam-pwdfile-rs/v0.2.1";
+      url = "github:lialh4qwq/libpam-pwdfile-rs/v0.3.0";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
-  outputs =
-    {
-      nixpkgs,
-      libpam-pwdfile-rs,
-      ...
-    }:
-    {
-      nixosConfigurations =
-        {
-          nixos = nixpkgs.lib.nixosSystem {
-            modules = [
-              libpam-pwdfile-rs.nixosModules.libpam-pwdfile-rs
-              ./configuration.nix
-            ];
-          };
-        };
+
+  outputs = { nixpkgs, libpam-pwdfile-rs, ... }: {
+    nixosConfigurations.your-host = nixpkgs.lib.nixosSystem {
+      modules = [
+        libpam-pwdfile-rs.nixosModules.libpam-pwdfile-rs
+        # ... your other modules
+      ];
     };
+  };
 }
 ```
 
-Add config to your system configuration like this.
+Then configure:
 
 ```nix
-# Main configuration section.
-libpam-pwdfile-rs = {
-    # A pwdfile config instance, can be any name.
-    pin = {
-      # pwdfile location.
-      pwdfile = "/etc/pin";
-      # Service that uses this for auth.
-      services = [ "polkit-1" ];
-      # Users and their passwords.
-      users = {
-        # Username and `sha512sum` hashed passwords
-        lialh4.secret = "9347259d6b1d86cc3a1eb2dd7b5d7a529d2e26524c16307e5f5bd9ca5b7513140f6f12f1c8066ab025d40579d9911e6c5bdbd4a17ba4bd5f6abfffb2947e2141";
-      };
+libpam-pwdfile-rs= {
+  # a pwd file instance, can be any name
+  pin = {
+    # pwd file location
+    pwdfile = "/etc/pin";
+    # pam service which use it for auth
+    services = [ "polkit-1" "sudo" ];
+    # users and their passwords
+    users = {
+      # username and passwords hashed by yescrypt
+      yourname.secret = "$y$j9T$...";  # mkpasswd -m yescrypt
     };
   };
+};
 ```
 
-## Non NixOS
+</details>
 
-### Installation
+<details>
+<summary><strong>🔷 Arch Linux</strong></summary>
 
-#### Arch Linux
-
-Currently broken, please use [Original Repo](https://github.com/Supernovatux/libpam-pwdfile-rs) instead.
-
-```shell
-$ cd /tmp
-$ curl -LO https://github.com/lialh4qwq/libpam-pwdfile-rs/releases/download/v0.2.1/PKGBUILD
-$ makepkg -si
+```bash
+# Download and build from source
+curl -LO https://github.com/lialh4qwq/libpam-pwdfile-rs/releases/download/v0.3.0/PKGBUILD
+makepkg -si
 ```
 
-#### Other distros (Generic Installation method)
+</details>
 
-```shell
-$ git clone https://github.com/lialh4qwq/libpam-pwdfile-rs
-$ cd libpam-pwdfile-rs
-$ cargo build --release
-$ run0 cp target/release/libpam_pwdfile_rs.so /usr/lib/security/pam_pwdfile_rs.so
+<details>
+<summary><strong>📦 Other Distros</strong></summary>
+
+```bash
+git clone https://github.com/lialh4qwq/libpam-pwdfile-rs
+cd libpam-pwdfile-rs
+cargo build --release
+sudo install -Dm755 target/release/libpam_pwdfile_rs.so /usr/lib/security/pam_pwdfile_rs.so
 ```
 
-### Configuration
+</details>
 
-To use custom passwords for specific users, create a file at `/etc/pwdfile` and add the hashed passwords for each user in the format `username:passwordhash`. You can use the `sha512sum `command to generate the hash of the password you want to use. For example, to use the password `password_foo` for user `foo`, run the command:
+## ⚙️ Configuration (Non NixOS)
 
-```shell
-$ echo -n "password_foo" | sha512sum
+### Password File Format
+
+Create your password file (e.g., `/etc/pwdfile`):
+
+```
+alice:$y$j9T$abc123...$hashhashhash
+bob:$y$j9T$def456...$hashhashhash
 ```
 
-This will output the hash in the format `<hash> -`, where `<hash>` is the generated password hash. Copy the hash and paste it in the `/etc/pwdfile` file in the format `foo:<hash>`. Repeat this process for each user and password combination you want to set.You may provide multiple entries for a single user if you want a user to have multiple passwords.You may use this command to automate the above process `printf "password_foo" | sha512sum | awk '{print $1}' |  sed 's/.*/$ foo:&/' | sudo tee -a /etc/pwdfile`
+Each line: `username:yescrypt_hash`
 
-Say you want to use custom password for two users `foo` and `bar` with the password `password_foo` and `password_bar` respectively.Then your `/etc/pwdfile` should look like below
+### PAM Integration
 
-```shell
-$ sudo cat /etc/pwdfile
-foo:c717e50d9dd5fb98877de7972daffa0f331e00496684f2d99642994cc777b6258df9a6397ecdf52456972e0fcf46104f4809a99d53102e6c7c70186b88263007
-bar:9603f874c66bbcdac59b0f3ed6ebf510d10fcebc588e7712bfbae5eec687dfb134470ca98c74d55bed8368012706038874e108bb3ae876cdaf8206715274e442
-```
+Add to your PAM service (e.g., `/etc/pam.d/sudo`):
 
-Then if you want to use this password for sudo the file `/etc/pam.d/sudo` should look like this
-
-```shell
-$ cat /etc/pam.d/sudo
+```pam
 #%PAM-1.0
-auth        sufficient  pam_pwdfile_rs.so pwdfile /etc/pwdfile
-auth        include     system-auth
-account     include     system-auth
-session     include     system-auth
+auth    sufficient  pam_pwdfile_rs.so pwdfile /etc/pwdfile
+auth    include     system-auth
+account include     system-auth
+session include     system-auth
 ```
 
-Similarly, for other PAM services, you can prepend the line 
-`auth        sufficient  pam_pwdfile_rs.so pwdfile /etc/pwdfile`
-to the file `/etc/pam.d/<service>`.
+The `sufficient` keyword means: if this succeeds, skip to the next stage. If it fails, try the next auth method.
 
-### Uninstallation
+## 🎯 Use Cases
 
-You may want to undo the changes to pam.d directory first
+- 🔢 **PIN for polkit** — Quick numeric code for GUI privilege elevation
+- 🔑 **Separate sudo password** — Different password for terminal vs login
+- 👥 **Multi-password users** — One user, multiple valid passwords
+- 🏢 **Service accounts** — Simple auth without system user management
 
-#### Arch Linux
+## 📝 License
 
-```shell
-$ sudo pacman -Rns libpam-pwdfile-rs
-```
+MIT — Do whatever you want.
 
-#### Other distros
+---
 
-```shell
-$ sudo rm /usr/lib/security/pam_pwdfile_rs.so
-```
+<p align="center">
+  <sub>Made with 🦀 Rust</sub>
+</p>

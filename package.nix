@@ -8,11 +8,11 @@
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "libpam-pwdfile-rs";
-  version = "0.2.1";
+  version = "0.3.0";
 
   src = lib.cleanSource ./.;
 
-  cargoHash = "sha256-Cu9otmJL0Q5j1HxygEGOJ3ywGT+M1Zn56bYw58JVe08=";
+  cargoHash = "sha256-XsIhulZHnZZC5XHtT4xDkjYg4H5VKsBsQVTOE7wgkyo=";
 
   nativeBuildInputs = [
     pkg-config
@@ -39,7 +39,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       This is useful if you want to use a different password somewhere, eg. gdm, polkit,
       which behaves like PIN of Windows.
       It can also be used to set multiple passwords for users.
-      Passwords should be hashed by sha512sum.
+      Passwords should be hashed with yescrypt (mkpasswd -m yescrypt).
     '';
     homepage = "https://github.com/lialh4qwq/pam-pwdfile-rs";
     changelog = "https://github.com/lialh4qwq/pam-pwdfile-rs/releases/tag/v${finalAttrs.version}";
