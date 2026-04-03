@@ -4,7 +4,7 @@
 [![NixOS](https://img.shields.io/badge/NixOS-Flake_Ready-5277C3?style=flat-square&logo=nixos)](https://nixos.org/)
 [![Arch Linux](https://img.shields.io/badge/Arch_Linux-PKGBUILD-1793D1?style=flat-square&logo=archlinux)](https://archlinux.org/)
 [![MIT License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
-[![Version](https://img.shields.io/badge/v0.3.1-latest-blue?style=flat-square)](https://github.com/lialh4qwq/libpam-pwdfile-rs/releases/tag/v0.3.1)
+[![Version](https://img.shields.io/badge/v0.4.0-latest-blue?style=flat-square)](https://github.com/lialh4qwq/libpam-pwdfile-rs/releases/tag/v0.4.0)
 
 **[English](README.md)**
 
@@ -20,8 +20,9 @@
 
 - 🛡️ **yescrypt 哈希** — 内存硬化，抗 GPU 破解
 - 🐧 **NixOS 原生支持** — 包含 Flake 和声明式模块
-- 📦 **多发行版** — Arch 的 PKGBUILD，其他发行版通用安装
+- 📦 **多发行版** — Arch 的 PKGBUILD，Fedora/RHEL 的 RPM spec，其他发行版通用安装
 - 🔧 **配置简单** — 密码文件只需 `用户名:哈希`
+- 🔒 **SUID helper** — 支持非 root PAM 客户端（hyprlock 等）
 
 ## 🛡️ 为什么选择 yescrypt？
 
@@ -53,7 +54,7 @@ mkpasswd -m yescrypt
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     libpam-pwdfile-rs = {
-      url = "github:lialh4qwq/libpam-pwdfile-rs/v0.3.1";
+      url = "github:lialh4qwq/libpam-pwdfile-rs/v0.4.0";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -72,13 +73,12 @@ mkpasswd -m yescrypt
 然后配置：
 
 ```nix
-libpam-pwdfile-rs.pin = {
 libpam-pwdfile-rs= {
   # 一个配置实例，名称任意
   pin = {
     # 密码文件路径
     pwdfile = "/etc/pin";
-    # 那些 PAM 服务用它认证
+    # 哪些 PAM 服务用它认证
     services = [ "polkit-1" "sudo" ];
     # 用户和密码
     users = {
@@ -96,8 +96,20 @@ libpam-pwdfile-rs= {
 
 ```bash
 # 下载并从源码构建
-curl -LO https://github.com/lialh4qwq/libpam-pwdfile-rs/releases/download/v0.3.1/PKGBUILD
+curl -LO https://github.com/lialh4qwq/libpam-pwdfile-rs/releases/download/v0.4.0/PKGBUILD
 makepkg -si
+```
+
+</details>
+
+<details>
+<summary><strong>🎩 Fedora/RHEL</strong></summary>
+
+```bash
+# 下载 spec 文件并构建 RPM
+curl -LO https://github.com/lialh4qwq/libpam-pwdfile-rs/releases/download/v0.4.0/pam_pwdfile_rs.spec
+rpmbuild -ba pam_pwdfile_rs.spec
+sudo dnf install ~/rpmbuild/RPMS/x86_64/pam_pwdfile_rs-*.rpm
 ```
 
 </details>
@@ -108,8 +120,15 @@ makepkg -si
 ```bash
 git clone https://github.com/lialh4qwq/libpam-pwdfile-rs
 cd libpam-pwdfile-rs
+
+# 构建（通过 .cargo/config.toml 使用 clang）
 cargo build --release
+
+# 安装 PAM 模块
 sudo install -Dm755 target/release/libpam_pwdfile_rs.so /usr/lib/security/pam_pwdfile_rs.so
+
+# 安装 helper（SUID root）
+sudo install -Dm4755 target/release/pam_pwdfile_rs_helper /usr/bin/pam_pwdfile_rs_helper
 ```
 
 </details>
@@ -140,6 +159,12 @@ session include     system-auth
 ```
 
 `sufficient` 关键字的含义：如果认证成功，跳过后续认证直接通过；如果失败，继续尝试下一个认证方式。
+
+**可选：** 指定自定义 helper 路径：
+
+```pam
+auth    sufficient  pam_pwdfile_rs.so pwdfile /etc/pwdfile helper=/custom/path/helper
+```
 
 ## 🎯 使用场景
 

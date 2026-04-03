@@ -4,18 +4,20 @@
   pkg-config,
   rustPlatform,
   stdenv,
+  llvmPackages,
 }:
 
-rustPlatform.buildRustPackage (finalAttrs: {
+rustPlatform.buildRustPackage {
   pname = "libpam-pwdfile-rs";
-  version = "0.3.1";
+  version = "0.4.0";
 
   src = lib.cleanSource ./.;
 
-  cargoHash = "sha256-5Znu7O7/WAyCvMv90Hv8EMz1ucdRkY2rkvQNTZDPZpg=";
+  cargoHash = "sha256-Ss2GbE/TgASAEsO2Mg097RxI9qqXjf+KmhIOERldGwE=";
 
   nativeBuildInputs = [
     pkg-config
+    llvmPackages.clang
   ];
 
   buildInputs = [
@@ -29,6 +31,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     install -Dm755 \
       target/${stdenv.hostPlatform.config}/release/libpam_pwdfile_rs.so \
       $out/lib/security/pam_pwdfile_rs.so
+    install -Dm755 \
+      target/${stdenv.hostPlatform.config}/release/pam_pwdfile_rs_helper \
+      $out/bin/pam_pwdfile_rs_helper
     runHook postInstall
   '';
 
@@ -42,8 +47,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
       Passwords should be hashed with yescrypt (mkpasswd -m yescrypt).
     '';
     homepage = "https://github.com/lialh4qwq/pam-pwdfile-rs";
-    changelog = "https://github.com/lialh4qwq/pam-pwdfile-rs/releases/tag/v${finalAttrs.version}";
+    changelog = "https://github.com/lialh4qwq/pam-pwdfile-rs/releases/tag/v0.4.0";
     license = lib.licenses.mit;
     platforms = lib.platforms.linux;
   };
-})
+}

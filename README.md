@@ -4,7 +4,7 @@
 [![NixOS](https://img.shields.io/badge/NixOS-Flake_Ready-5277C3?style=flat-square&logo=nixos)](https://nixos.org/)
 [![Arch Linux](https://img.shields.io/badge/Arch_Linux-PKGBUILD-1793D1?style=flat-square&logo=archlinux)](https://archlinux.org/)
 [![MIT License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
-[![Version](https://img.shields.io/badge/v0.3.1-latest-blue?style=flat-square)](https://github.com/lialh4qwq/libpam-pwdfile-rs/releases/tag/v0.3.1)
+[![Version](https://img.shields.io/badge/v0.4.0-latest-blue?style=flat-square)](https://github.com/lialh4qwq/libpam-pwdfile-rs/releases/tag/v0.4.0)
 
 **[中文](README-CN.md)**
 
@@ -20,8 +20,9 @@ Forked from [Supernovatux/libpam-pwdfile-rs](https://github.com/Supernovatux/lib
 
 - 🛡️ **yescrypt hashing** — Memory-hard, GPU-resistant password protection
 - 🐧 **NixOS native** — Flake + declarative module included
-- 📦 **Multi-distro** — PKGBUILD for Arch, generic install for others
+- 📦 **Multi-distro** — PKGBUILD for Arch, RPM spec for Fedora/RHEL, generic install for others
 - 🔧 **Simple config** — Just `username:hash` in a file
+- 🔒 **SUID helper** — Works with non-root PAM clients (hyprlock, etc.)
 
 ## 🛡️ Why yescrypt?
 
@@ -53,7 +54,7 @@ Add to your `flake.nix`:
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     libpam-pwdfile-rs = {
-      url = "github:lialh4qwq/libpam-pwdfile-rs/v0.3.1";
+      url = "github:lialh4qwq/libpam-pwdfile-rs/v0.4.0";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -95,8 +96,20 @@ libpam-pwdfile-rs= {
 
 ```bash
 # Download and build from source
-curl -LO https://github.com/lialh4qwq/libpam-pwdfile-rs/releases/download/v0.3.1/PKGBUILD
+curl -LO https://github.com/lialh4qwq/libpam-pwdfile-rs/releases/download/v0.4.0/PKGBUILD
 makepkg -si
+```
+
+</details>
+
+<details>
+<summary><strong>🎩 Fedora/RHEL</strong></summary>
+
+```bash
+# Download spec file and build RPM
+curl -LO https://github.com/lialh4qwq/libpam-pwdfile-rs/releases/download/v0.4.0/pam_pwdfile_rs.spec
+rpmbuild -ba pam_pwdfile_rs.spec
+sudo dnf install ~/rpmbuild/RPMS/x86_64/pam_pwdfile_rs-*.rpm
 ```
 
 </details>
@@ -107,8 +120,15 @@ makepkg -si
 ```bash
 git clone https://github.com/lialh4qwq/libpam-pwdfile-rs
 cd libpam-pwdfile-rs
+
+# Build (uses clang via .cargo/config.toml)
 cargo build --release
+
+# Install PAM module
 sudo install -Dm755 target/release/libpam_pwdfile_rs.so /usr/lib/security/pam_pwdfile_rs.so
+
+# Install helper (SUID root)
+sudo install -Dm4755 target/release/pam_pwdfile_rs_helper /usr/bin/pam_pwdfile_rs_helper
 ```
 
 </details>
@@ -139,6 +159,12 @@ session include     system-auth
 ```
 
 The `sufficient` keyword means: if this succeeds, skip to the next stage. If it fails, try the next auth method.
+
+**Optional:** Specify custom helper path:
+
+```pam
+auth    sufficient  pam_pwdfile_rs.so pwdfile /etc/pwdfile helper=/custom/path/helper
+```
 
 ## 🎯 Use Cases
 

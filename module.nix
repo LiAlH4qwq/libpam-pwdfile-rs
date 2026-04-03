@@ -6,6 +6,14 @@
 }:
 let
   package = pkgs.callPackage ./package.nix { };
+  cfg = config.libpam-pwdfile-rs;
+
+  # Generate pwdfile content
+  mkPwdfileContent =
+    users: lib.concatStringsSep "\n" (lib.mapAttrsToList (name: val: "${name}:${val.secret}") users);
+
+  # New pwdfile path
+  pwdfilePath = name: "/run/libpam-pwdfile-rs/${name}";
 in
 {
   options.libpam-pwdfile-rs = lib.mkOption {
@@ -15,8 +23,11 @@ in
           pwdfile = lib.mkOption {
             type = lib.types.path;
             default = /etc/pwdfile;
-            example = /etc/pin;
-            description = "pwdfile used for auth.";
+            visible = false;
+            description = lib.mdDoc ''
+              **DEPRECATED**: This option is deprecated and no longer has any effect.
+              pwdfile is now automatically managed at `/run/libpam-pwdfile-rs/<name>`.
+            '';
           };
           services = lib.mkOption {
             type = lib.types.listOf lib.types.str;
@@ -52,49 +63,71 @@ in
     default = { };
     example = {
       pin = {
-        pwdfile = /etc/pin;
         services = [
           "gdm"
           "polkit-1"
         ];
+        users.yourname.secret = "$y$j9T$...";
       };
     };
     description = "pwdfile instances used to auth.";
   };
 
-  config.security.pam.services = lib.mkMerge (
-    lib.mapAttrsToList (
-      _: val:
-      lib.genAttrs val.services (_: {
-        rules.auth.pwdfile = {
-          order = 11500;
-          control = "sufficient";
-          modulePath = "${package}/lib/security/pam_pwdfile_rs.so";
-          args = [
-            "pwdfile"
-            (toString val.pwdfile)
-          ];
-        };
-      })
-    ) config.libpam-pwdfile-rs
-  );
+  config = lib.mkIf (cfg != { }) {
+    # Warn users who still use the deprecated pwdfile option
+    warnings = lib.flatten (
+      lib.mapAttrsToList (
+        name: val:
+        lib.optional (val.pwdfile != /etc/pwdfile)
+          "libpam-pwdfile-rs.${name}.pwdfile is deprecated and has no effect. pwdfile is now at ${pwdfilePath name}"
+      ) cfg
+    );
 
-  config.system.activationScripts = lib.mkMerge (
-    lib.mapAttrsToList (
-      name: val:
-      lib.optionalAttrs (val.users != { }) {
-        "libpam-pwdfile-rs-${name}" = {
-          text = ''
-            install -Dm600 /dev/null ${val.pwdfile}
-            ${lib.concatStringsSep "\n" (
-              lib.mapAttrsToList (n: v: ''
-                printf '%s\n' '${n}:${v.secret}' >> ${val.pwdfile}
-              '') val.users
-            )}
-          '';
-          deps = [ ];
-        };
-      }
-    ) config.libpam-pwdfile-rs
-  );
+    security.wrappers.pam_pwdfile_rs_helper = {
+      source = "${package}/bin/pam_pwdfile_rs_helper";
+      setuid = true;
+      owner = "root";
+      group = "root";
+    };
+
+    security.pam.services = lib.mkMerge (
+      lib.mapAttrsToList (
+        name: val:
+        lib.genAttrs val.services (serviceName: {
+          rules.auth.pwdfile = {
+            # Run before pam_unix (sufficient: skip remaining auth rules if success)
+            order = config.security.pam.services.${serviceName}.rules.auth.unix.order - 50;
+            control = "sufficient";
+            modulePath = "${package}/lib/security/pam_pwdfile_rs.so";
+            args = [
+              "pwdfile"
+              (pwdfilePath name)
+            ];
+          };
+        })
+      ) cfg
+    );
+
+    # Use systemd-tmpfiles to create directory and files
+    systemd.tmpfiles.settings."10-libpam-pwdfile-rs" = {
+      "/run/libpam-pwdfile-rs".d = {
+        mode = "0700";
+        user = "root";
+        group = "root";
+      };
+    }
+    // lib.listToAttrs (
+      lib.mapAttrsToList (
+        name: val:
+        lib.nameValuePair (pwdfilePath name) {
+          f = {
+            mode = "0600";
+            user = "root";
+            group = "root";
+            argument = mkPwdfileContent val.users;
+          };
+        }
+      ) (lib.filterAttrs (_: val: val.users != { }) cfg)
+    );
+  };
 }

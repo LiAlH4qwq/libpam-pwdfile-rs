@@ -1,6 +1,6 @@
 [package]
 name = "pam_pwdfile_rs"
-version = "0.3.1"
+version = "0.4.0"
 edition = "2024"
 authors = [
   "Supernovatux <thulashitharan.d@gmail.com>",
@@ -8,12 +8,18 @@ authors = [
 ]
 
 [dependencies]
-pamsm = {version = "*" ,features = ["libpam"] }
+pamsm = { version = "*", features = ["libpam"] }
 yescrypt = "0.1.0-rc.5"
+zeroize = "1"
+uzers = "0.12"
 
 [lib]
 name = "pam_pwdfile_rs"
 crate-type = ["cdylib"]
+
+[[bin]]
+name = "pam_pwdfile_rs_helper"
+path = "src/helper.rs"
 
 [profile.release]
 debug = false
