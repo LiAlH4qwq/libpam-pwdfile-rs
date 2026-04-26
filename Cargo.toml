@@ -9,7 +9,7 @@ authors = [
 
 [dependencies]
 pamsm = { version = "*", features = ["libpam"] }
-yescrypt = "0.1.0-rc.5"
+yescrypt = "0.1.0"
 zeroize = "1"
 uzers = "0.12"
 
