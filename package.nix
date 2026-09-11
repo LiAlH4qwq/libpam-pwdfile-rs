@@ -9,7 +9,7 @@
 
 rustPlatform.buildRustPackage {
   pname = "libpam-pwdfile-rs";
-  version = "0.4.0";
+  version = "0.4.1";
 
   src = lib.cleanSource ./.;
 
@@ -29,10 +29,10 @@ rustPlatform.buildRustPackage {
   installPhase = ''
     runHook preInstall
     install -Dm755 \
-      target/${stdenv.hostPlatform.config}/release/libpam_pwdfile_rs.so \
+      target/${stdenv.targetPlatform.rust.cargoShortTarget}/release/libpam_pwdfile_rs.so \
       $out/lib/security/pam_pwdfile_rs.so
     install -Dm755 \
-      target/${stdenv.hostPlatform.config}/release/pam_pwdfile_rs_helper \
+      target/${stdenv.targetPlatform.rust.cargoShortTarget}/release/pam_pwdfile_rs_helper \
       $out/bin/pam_pwdfile_rs_helper
     runHook postInstall
   '';
@@ -47,7 +47,7 @@ rustPlatform.buildRustPackage {
       Passwords should be hashed with yescrypt (mkpasswd -m yescrypt).
     '';
     homepage = "https://github.com/lialh4qwq/pam-pwdfile-rs";
-    changelog = "https://github.com/lialh4qwq/pam-pwdfile-rs/releases/tag/v0.4.0";
+    changelog = "https://github.com/lialh4qwq/pam-pwdfile-rs/releases/tag/v0.4.1";
     license = lib.licenses.mit;
     platforms = lib.platforms.linux;
   };
