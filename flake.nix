@@ -1,40 +1,30 @@
 {
   description = "libpam-pwdfile-rs - PAM module that auth against pwdfile";
 
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+    flake-parts.url = "github:hercules-ci/flake-parts";
+  };
 
   outputs =
-    { nixpkgs, ... }:
-    let
-      supportedSystems = [
+    inputs@{ flake-parts, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = [
         "x86_64-linux"
         "aarch64-linux"
       ];
-      forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
-    in
-    {
-      nixosModules = rec {
+
+      flake.nixosModules = rec {
         default = libpam-pwdfile-rs;
         libpam-pwdfile-rs = import ./module.nix;
       };
 
-      packages = forAllSystems (
-        system:
-        let
-          pkgs = nixpkgs.legacyPackages.${system};
-        in
+      perSystem =
+        { pkgs, ... }:
         {
-          default = pkgs.callPackage ./package.nix { };
-        }
-      );
+          packages.default = pkgs.callPackage ./package.nix { };
 
-      devShells = forAllSystems (
-        system:
-        let
-          pkgs = nixpkgs.legacyPackages.${system};
-        in
-        {
-          default = pkgs.mkShell {
+          devShells.default = pkgs.mkShell {
             nativeBuildInputs = [
               pkgs.cargo
               pkgs.rustc
@@ -55,7 +45,6 @@
               echo "Cargo: $(cargo --version)"
             '';
           };
-        }
-      );
+        };
     };
 }

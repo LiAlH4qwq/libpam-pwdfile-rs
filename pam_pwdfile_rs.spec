@@ -1,5 +1,5 @@
 Name:           pam_pwdfile_rs
-Version:        0.4.1
+Version:        0.4.2
 Release:        1%{?dist}
 Summary:        PAM module that authenticates against pwdfile with yescrypt
 
@@ -39,6 +39,10 @@ install -Dm4755 target/release/pam_pwdfile_rs_helper \
 %attr(4755,root,root) %{_bindir}/pam_pwdfile_rs_helper
 
 %changelog
+* Sun Sep 13 2026 LiAlH4qwq <lialh4qwq@outlook.com> - 0.4.2-1
+- Migrate the Nix flake to flake-parts
+- Verify cross-compilation to 32-bit ARM (armv7l)
+
 * Sat Sep 12 2026 LiAlH4qwq <lialh4qwq@outlook.com> - 0.4.1-1
 - Fix install path for cross-compilation to non-x86 targets
 
